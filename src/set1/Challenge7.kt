@@ -6,13 +6,12 @@ import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
 fun main() {
-    decryptAESinECBMode(File("src/set1/challenge7.txt").readBytes())
+    println(String(decryptAESinECBMode(Base64.getMimeDecoder().decode(File("src/set1/challenge7.txt").readBytes()), "YELLOW SUBMARINE")))
 }
 
-fun decryptAESinECBMode(readBytes: ByteArray) {
-    val decoded = Base64.getMimeDecoder().decode(readBytes)
-    val secretKey = SecretKeySpec("YELLOW SUBMARINE".toByteArray(), "AES")
-    val cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING")
+fun decryptAESinECBMode(readBytes: ByteArray, key: String) : ByteArray {
+    val secretKey = SecretKeySpec(key.toByteArray(), "AES")
+    val cipher = Cipher.getInstance("AES/ECB/NoPadding")
     cipher.init(Cipher.DECRYPT_MODE, secretKey)
-    println(String(cipher.doFinal(decoded)))
+    return cipher.doFinal(readBytes)
 }

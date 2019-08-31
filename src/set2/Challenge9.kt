@@ -11,12 +11,11 @@ package set2
  * "YELLOW SUBMARINE\x04\x04\x04\x04"
  */
 fun main() {
-    println(pad("YELLOW SUBMARINE", 20))
+    println(String(pad("YELLOW SUBMARINE".toByteArray(), 20)))
 }
 
-fun pad(input: String, paddingLength: Int): String {
-    val paddingSize = (paddingLength - (input.length % paddingLength)) // PKCS#7 padding mean the value of each added byte is the number of bytes that are added, i.e. N bytes, each of value N are added.
+fun pad(input: ByteArray, paddingLength: Int): ByteArray {
+    val paddingSize = (paddingLength - (input.size % paddingLength)) // PKCS#7 padding mean the value of each added byte is the number of bytes that are added, i.e. N bytes, each of value N are added.
     val padding = ByteArray(paddingSize) {paddingSize.toByte()}
-    val bytes = input.toByteArray().plus(padding)
-    return bytes.map { it.toChar() }.toCharArray().joinToString("")
+    return input.plus(padding)
 }
