@@ -14,14 +14,14 @@ fun main() {
     println(String(byteAtATimeECBDecryption(File("src/set2/challenge11.txt").readText().toByteArray())))
 }
 
-fun byteAtATimeECBDecryption(input: ByteArray) : ByteArray {
+fun byteAtATimeECBDecryption(input: ByteArray): ByteArray {
     val keySize = findKeySize(input)
     val cipherText = notSoRandomCipherText(input)
     val usesECB = detectAESinECBMode(cipherText)
     var plaintext = ByteArray(0)
     println("Uses ECB: $usesECB")
 
-    (0..unknownString.size/keySize).forEach { blockNumber ->
+    (0..unknownString.size / keySize).forEach { blockNumber ->
         (1..keySize).forEach { byteNumber ->
             val placeHolderNumber = keySize - byteNumber
             val oneByteShort = ByteArray(placeHolderNumber) { 'A'.toByte() }
@@ -37,30 +37,29 @@ fun byteAtATimeECBDecryption(input: ByteArray) : ByteArray {
     return plaintext
 }
 
-fun notSoRandomCipherText(input: ByteArray) : ByteArray {
+fun notSoRandomCipherText(input: ByteArray): ByteArray {
     val plaintext = pad(input + unknownString, key.size)
     return encryptAESinECBMode(plaintext, key)
 }
 
-//As soon as we get a repeating first block, we know the key length
-fun findKeySize(input: ByteArray) : Int {
-    var keySizeFound = false
+fun findKeySize(input: ByteArray): Int {
     var n = 0
-    var value = ByteArray(0)
-    while (!keySizeFound) {
-        if(n == 0) {
-            value = notSoRandomCipherText(input.copyOfRange(0, n))
+    var value = 0
+    var keySize = 0
+    while (keySize == 0) {
+        if (n == 0) {
+            value = notSoRandomCipherText(input.copyOfRange(0, n)).size
             n++
         }
-        val next = notSoRandomCipherText(input.copyOfRange(0, n + 1))
-        if (next.copyOfRange(0, n).contentEquals(value.copyOfRange(0, n))) {
-            println("Found key with size $n")
-            keySizeFound = true
+        val next = notSoRandomCipherText(input.copyOfRange(0, n + 1)).size
+        if (next > value) {
+            println("Found key with size ${next - value}")
+            keySize = next - value
         } else {
             value = next
             n++
         }
     }
 
-    return n
+    return keySize
 }
