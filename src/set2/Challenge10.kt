@@ -21,7 +21,7 @@ import kotlin.experimental.xor
 fun main() {
     val key = "YELLOW SUBMARINE"
     val iv = ByteArray(key.length){"0".toByte()}
-    val encrypted = Base64.getMimeEncoder().encode(encryptAESinCBCMode("some random input i don't care about".toByteArray(), key, iv))
+    val encrypted = Base64.getMimeEncoder().encode(encryptAESinCBCMode("some random input i don't care about".toByteArray(), key.toByteArray(), iv))
     println(String(encrypted))
     println(String(decryptAESinCBCMode(encrypted, key, iv)))
     println(String(decryptAESinCBCMode(File("src/set2/challenge10.txt").readBytes(), key, iv)))
@@ -43,9 +43,9 @@ fun decryptAESinCBCMode(readBytes: ByteArray, key: String, iv: ByteArray): ByteA
     return plaintextBlocks.reduce(ByteArray::plus)
 }
 
-fun encryptAESinCBCMode(input: ByteArray, key: String, iv: ByteArray) : ByteArray {
-    val padded = pad(input, key.length)
-    val plaintextBlocks = padded.toList().chunked(key.length).map { it.toByteArray() }
+fun encryptAESinCBCMode(input: ByteArray, key: ByteArray, iv: ByteArray) : ByteArray {
+    val padded = pad(input, key.size)
+    val plaintextBlocks = padded.toList().chunked(key.size).map { it.toByteArray() }
     val encryptedBlocks = mutableListOf<ByteArray>()
     // In CBC mode, each block of plaintext is XORed with the previous ciphertext block before being encrypted.
     // This way, each ciphertext block depends on all plaintext blocks processed up to that point.
@@ -61,8 +61,8 @@ fun encryptAESinCBCMode(input: ByteArray, key: String, iv: ByteArray) : ByteArra
     return encryptedBlocks.reduce(ByteArray::plus)
 }
 
-fun encryptAESinECBMode(input: ByteArray, key: String) : ByteArray {
-    val secretKey = SecretKeySpec(key.toByteArray(), "AES")
+fun encryptAESinECBMode(input: ByteArray, key: ByteArray) : ByteArray {
+    val secretKey = SecretKeySpec(key, "AES")
     val cipher = Cipher.getInstance("AES/ECB/NoPadding")
     cipher.init(Cipher.ENCRYPT_MODE, secretKey)
     return cipher.doFinal(input)

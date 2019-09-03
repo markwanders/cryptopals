@@ -7,11 +7,19 @@ fun main() {
 }
 
 fun detectAESinECBMode(input: List<String>) {
-    val detectedLine = input.mapIndexed { line, s ->
-        val blocks = s.chunked(16) // Split into 16 byte blocks
-        val repeatedBlocks = blocks.groupingBy { it }.eachCount().filter { it.value > 1 }.values.sum() // Count the repeated blocks
-        line to repeatedBlocks
-    }.maxBy { it.second }!!.first // Get the line with the most repeats
-    println("Probable line #$detectedLine:")
-    println(input[detectedLine])
+    val detectedLine = input.first {
+        detectAESinECBMode(it.toByteArray())
+    }
+    println("Probable line $detectedLine:")
+}
+
+fun detectAESinECBMode(input: ByteArray) : Boolean {
+    return input
+            .toList()
+            .chunked(16)
+            .groupingBy { it }
+            .eachCount()
+            .filter { it.value > 1 }
+            .values
+            .sum() > 0
 }
