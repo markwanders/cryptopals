@@ -19,17 +19,14 @@ import kotlin.experimental.xor
  */
 
 fun main() {
-    val key = "YELLOW SUBMARINE"
-    val iv = ByteArray(key.length){"0".toByte()}
-    val encrypted = Base64.getMimeEncoder().encode(encryptAESinCBCMode("some random input i don't care about".toByteArray(), key.toByteArray(), iv))
-    println(String(encrypted))
-    println(String(decryptAESinCBCMode(encrypted, key, iv)))
+    val key = "YELLOW SUBMARINE".toByteArray()
+    val iv = ByteArray(key.size){"0".toByte()}
     println(String(decryptAESinCBCMode(File("src/set2/challenge10.txt").readBytes(), key, iv)))
 }
 
-fun decryptAESinCBCMode(readBytes: ByteArray, key: String, iv: ByteArray): ByteArray {
+fun decryptAESinCBCMode(readBytes: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
     val decoded = Base64.getMimeDecoder().decode(readBytes)
-    val ciphertextBlocks = decoded.toList().chunked(key.length).map { it.toByteArray() }
+    val ciphertextBlocks = decoded.toList().chunked(key.size).map { it.toByteArray() }
     val plaintextBlocks = mutableListOf<ByteArray>()
     ciphertextBlocks.mapIndexedTo( plaintextBlocks, { index, ciphertextBlock ->
         val previousBlock = if(index == 0) {
@@ -63,7 +60,7 @@ fun encryptAESinCBCMode(input: ByteArray, key: ByteArray, iv: ByteArray) : ByteA
 
 fun encryptAESinECBMode(input: ByteArray, key: ByteArray) : ByteArray {
     val secretKey = SecretKeySpec(key, "AES")
-    val cipher = Cipher.getInstance("AES/ECB/NoPadding")
+    val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
     cipher.init(Cipher.ENCRYPT_MODE, secretKey)
     return cipher.doFinal(input)
 }
