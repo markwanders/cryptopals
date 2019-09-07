@@ -34,8 +34,8 @@ fun decryptAESinCBCMode(readBytes: ByteArray, key: ByteArray, iv: ByteArray): By
         } else {
             ciphertextBlocks[index - 1]
         }
-        val ecbDecrypted = decryptAESinECBMode(ciphertextBlock, key)
-        ecbDecrypted.mapIndexed { byteIndex, byte -> byte.xor(previousBlock[byteIndex])}.toByteArray()
+        val ecbDecrypted = decryptAESinECBMode(ciphertextBlock, key, false)
+        stripPadding(ecbDecrypted.mapIndexed { byteIndex, byte -> byte.xor(previousBlock[byteIndex])}.toByteArray())
     })
     return plaintextBlocks.reduce(ByteArray::plus)
 }
@@ -60,7 +60,17 @@ fun encryptAESinCBCMode(input: ByteArray, key: ByteArray, iv: ByteArray) : ByteA
 
 fun encryptAESinECBMode(input: ByteArray, key: ByteArray) : ByteArray {
     val secretKey = SecretKeySpec(key, "AES")
-    val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+    val cipher = Cipher.getInstance("AES/ECB/NoPadding")
     cipher.init(Cipher.ENCRYPT_MODE, secretKey)
     return cipher.doFinal(input)
+}
+
+fun stripPadding(input: ByteArray) : ByteArray {
+    (1 until input.size).forEach { i ->
+        val range = input.copyOfRange(input.size - i, input.size)
+        if (range.contentEquals(ByteArray(i) {i.toChar().toByte()})) {
+            return input.copyOfRange(0, input.size - i)
+        }
+    }
+    return input
 }

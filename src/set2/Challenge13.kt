@@ -7,7 +7,7 @@ val encryptionKey = Random.nextBytes(16)
 
 fun main() {
     val encrypted = encryptAESinECBMode(pad(profileFor("foo@bar.com").toByteArray(), encryptionKey.size), encryptionKey)
-    parseKeyValue(String(decryptAESinECBMode(encrypted, encryptionKey)))
+    parseKeyValue(String(decryptAESinECBMode(encrypted, encryptionKey, true)))
 
 }
 
