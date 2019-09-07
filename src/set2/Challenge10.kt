@@ -19,17 +19,14 @@ import kotlin.experimental.xor
  */
 
 fun main() {
-    val key = "YELLOW SUBMARINE"
-    val iv = ByteArray(key.length){"0".toByte()}
-    val encrypted = Base64.getMimeEncoder().encode(encryptAESinCBCMode("some random input i don't care about".toByteArray(), key.toByteArray(), iv))
-    println(String(encrypted))
-    println(String(decryptAESinCBCMode(encrypted, key, iv)))
+    val key = "YELLOW SUBMARINE".toByteArray()
+    val iv = ByteArray(key.size){"0".toByte()}
     println(String(decryptAESinCBCMode(File("src/set2/challenge10.txt").readBytes(), key, iv)))
 }
 
-fun decryptAESinCBCMode(readBytes: ByteArray, key: String, iv: ByteArray): ByteArray {
+fun decryptAESinCBCMode(readBytes: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
     val decoded = Base64.getMimeDecoder().decode(readBytes)
-    val ciphertextBlocks = decoded.toList().chunked(key.length).map { it.toByteArray() }
+    val ciphertextBlocks = decoded.toList().chunked(key.size).map { it.toByteArray() }
     val plaintextBlocks = mutableListOf<ByteArray>()
     ciphertextBlocks.mapIndexedTo( plaintextBlocks, { index, ciphertextBlock ->
         val previousBlock = if(index == 0) {
@@ -37,8 +34,8 @@ fun decryptAESinCBCMode(readBytes: ByteArray, key: String, iv: ByteArray): ByteA
         } else {
             ciphertextBlocks[index - 1]
         }
-        val ecbDecrypted = decryptAESinECBMode(ciphertextBlock, key)
-        ecbDecrypted.mapIndexed { byteIndex, byte -> byte.xor(previousBlock[byteIndex])}.toByteArray()
+        val ecbDecrypted = decryptAESinECBMode(ciphertextBlock, key, false)
+        stripPadding(ecbDecrypted.mapIndexed { byteIndex, byte -> byte.xor(previousBlock[byteIndex])}.toByteArray())
     })
     return plaintextBlocks.reduce(ByteArray::plus)
 }
@@ -66,4 +63,14 @@ fun encryptAESinECBMode(input: ByteArray, key: ByteArray) : ByteArray {
     val cipher = Cipher.getInstance("AES/ECB/NoPadding")
     cipher.init(Cipher.ENCRYPT_MODE, secretKey)
     return cipher.doFinal(input)
+}
+
+fun stripPadding(input: ByteArray) : ByteArray {
+    (1 until input.size).forEach { i ->
+        val range = input.copyOfRange(input.size - i, input.size)
+        if (range.contentEquals(ByteArray(i) {i.toChar().toByte()})) {
+            return input.copyOfRange(0, input.size - i)
+        }
+    }
+    return input
 }
