@@ -18,13 +18,14 @@ fun main() {
     val exploitCipherText = exploitBlocks[0].plus(exploitBlocks[1]).plus(exploitBlocks[4]).plus(exploitBlocks[2])
     parseKeyValue(String(decryptAESinECBMode(exploitCipherText, encryptionKey, false)))
 }
-fun parseKeyValue(input: String) {
-    val map = input.split("&")
+fun parseKeyValue(input: String) : Map<String, String> {
+    val map = input.split("&", ";")
             .associate {
                 val (k, v) = it.split("=")
                 k to v
             }
     println(map)
+    return map
 }
 
 fun profileFor(email: String) : String {
